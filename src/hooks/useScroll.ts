@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ScrollStage } from '../types'
 
+const clamp = (value: number, min: number, max: number) =>
+	Math.min(max, Math.max(min, value))
+
 export function useScroll(sectionCount: number): ScrollStage {
 	const [stage, setStage] = useState<ScrollStage>({
 		progress: 0,
@@ -10,98 +13,93 @@ export function useScroll(sectionCount: number): ScrollStage {
 		direction: 0,
 		isLocked: false,
 	})
+
 	const frameRef = useRef<number>(0)
-	const sectionsRef = useRef<HTMLElement[]>([])
+	const lastScrollYRef = useRef(0)
+	const lastTimestampRef = useRef(0)
 
 	useEffect(() => {
-		// Получаем все секции
-		const sections = Array.from(
-			document.querySelectorAll<HTMLElement>('[data-section]'),
-		)
-		sectionsRef.current = sections
-
-		// Если секций нет, используем прогресс по скроллу
-		const actualSectionCount =
-			sections.length > 0 ? sections.length : sectionCount
-
 		const update = () => {
 			frameRef.current = 0
 
-			// Если есть data-section, используем позиционирование по секциям
-			if (sections.length > 0) {
-				const viewportMiddle = window.scrollY + window.innerHeight / 2
-				let currentIndex = 0
-				let bestDistance = Infinity
+			const sections = Array.from(
+				document.querySelectorAll<HTMLElement>('[data-section]'),
+			)
+			const totalSections =
+				sections.length > 0 ? sections.length : Math.max(sectionCount, 1)
+			const currentScrollY = window.scrollY
+			const now = performance.now()
+			const deltaY = currentScrollY - lastScrollYRef.current
+			const deltaTime = now - lastTimestampRef.current
 
-				sections.forEach((section, idx) => {
-					const sectionTop = section.offsetTop
-					const sectionBottom = sectionTop + section.offsetHeight
-					const sectionMiddle = (sectionTop + sectionBottom) / 2
+			const velocity = deltaTime > 0 ? Math.abs(deltaY / deltaTime) : 0
+			const direction: -1 | 0 | 1 =
+				deltaY === 0 ? 0 : deltaY > 0 ? 1 : -1
+
+			let sectionIndex = 0
+			let progress = 0
+
+			if (sections.length > 0) {
+				const viewportMiddle = currentScrollY + window.innerHeight / 2
+				let closestIndex = 0
+				let closestDistance = Number.POSITIVE_INFINITY
+
+				sections.forEach((section, index) => {
+					const sectionMiddle = section.offsetTop + section.offsetHeight / 2
 					const distance = Math.abs(viewportMiddle - sectionMiddle)
 
-					if (distance < bestDistance) {
-						bestDistance = distance
-						currentIndex = idx
+					if (distance < closestDistance) {
+						closestDistance = distance
+						closestIndex = index
 					}
 				})
 
-				// Прогресс на основе текущей секции
-				const progress = currentIndex / (actualSectionCount - 1)
-				const clampedProgress = Math.min(1, Math.max(0, progress))
-
-				setStage({
-					progress: clampedProgress,
-					sectionIndex: currentIndex,
-					rawScrollY: window.scrollY,
-					velocity: 0, // We don't calculate velocity here
-					direction: 0, // We don't calculate direction here
-					isLocked: false,
-				})
+				sectionIndex = closestIndex
+				progress =
+					totalSections > 1 ? closestIndex / (totalSections - 1) : 0
 			} else {
-				// Fallback: стандартный прогресс скролла
 				const root = document.documentElement
 				const maxScroll = Math.max(root.scrollHeight - window.innerHeight, 1)
-				const progress = window.scrollY / maxScroll
-				const sectionIndex = Math.min(
-					actualSectionCount - 1,
-					Math.floor(progress * actualSectionCount),
-				)
-				const clampedProgress = Math.min(1, Math.max(0, progress))
-
-				setStage({
-					progress: clampedProgress,
-					sectionIndex: sectionIndex,
-					rawScrollY: window.scrollY,
-					velocity: 0, // We don't calculate velocity here
-					direction: 0, // We don't calculate direction here
-					isLocked: false,
-				})
+				progress = currentScrollY / maxScroll
+				sectionIndex =
+					totalSections > 1
+						? clamp(Math.round(progress * (totalSections - 1)), 0, totalSections - 1)
+						: 0
 			}
+
+			setStage({
+				progress: clamp(progress, 0, 1),
+				sectionIndex,
+				rawScrollY: currentScrollY,
+				velocity,
+				direction,
+				isLocked: false,
+			})
+
+			lastScrollYRef.current = currentScrollY
+			lastTimestampRef.current = now
 		}
 
-		const onScroll = () => {
-			if (frameRef.current) cancelAnimationFrame(frameRef.current) // отменяем старый
+		const requestUpdate = () => {
+			if (frameRef.current) return
 			frameRef.current = requestAnimationFrame(update)
 		}
 
-		// Обновляем при изменении размера окна
-		const onResize = () => {
-			if (frameRef.current) return
-			frameRef.current = window.requestAnimationFrame(update)
-		}
+		lastScrollYRef.current = window.scrollY
+		lastTimestampRef.current = performance.now()
 
-		// Инициализация
 		update()
 
-		window.addEventListener('scroll', onScroll, { passive: true })
-		window.addEventListener('resize', onResize)
+		window.addEventListener('scroll', requestUpdate, { passive: true })
+		window.addEventListener('resize', requestUpdate)
 
 		return () => {
 			if (frameRef.current) {
-				window.cancelAnimationFrame(frameRef.current)
+				cancelAnimationFrame(frameRef.current)
 			}
-			window.removeEventListener('scroll', onScroll)
-			window.removeEventListener('resize', onResize)
+
+			window.removeEventListener('scroll', requestUpdate)
+			window.removeEventListener('resize', requestUpdate)
 		}
 	}, [sectionCount])
 

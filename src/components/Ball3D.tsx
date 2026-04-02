@@ -17,6 +17,15 @@ type Ball3DProps = {
   }
 }
 
+type BallPreview3DProps = {
+  customization?: Customization
+  lighting?: {
+    keyLight: string
+    fillLight: string
+    ambient: number
+  }
+}
+
 function createBasketballShaderMaterial(customization: Customization) {
   const material = new THREE.ShaderMaterial({
     transparent: false,
@@ -26,7 +35,16 @@ function createBasketballShaderMaterial(customization: Customization) {
       uLightDir: { value: new THREE.Vector3(0.25, 0.78, 0.54).normalize() },
       uBaseColor: { value: new THREE.Color(customization.baseColor || '#ff5a00') },
       uLineColor: { value: new THREE.Color(customization.lineColor || '#2c1810') },
-      uTextureType: { value: customization.texture === 'CLASSIC' ? 0 : customization.texture === 'STREET' ? 1 : 2 },
+      uTextureType: {
+        value:
+          customization.texture === 'CLASSIC'
+            ? 0
+            : customization.texture === 'STREET'
+              ? 1
+              : customization.texture === 'TECH'
+                ? 2
+                : 3
+      },
     },
     vertexShader: `
       varying vec2 vUv;
@@ -94,9 +112,26 @@ function createBasketballShaderMaterial(customization: Customization) {
       float seamDistance(vec2 uv) {
         float equator = abs(uv.y - 0.5);
         float wave = sin(uv.y * PI);
-        float v1 = abs(uv.x - (0.25 + 0.11 * wave));
-        float v2 = abs(uv.x - (0.75 - 0.11 * wave));
-        return min(equator, min(v1, v2));
+        float classicV1 = abs(uv.x - (0.25 + 0.11 * wave));
+        float classicV2 = abs(uv.x - (0.75 - 0.11 * wave));
+
+        if (uTextureType == 0) {
+          return min(equator, min(classicV1, classicV2));
+        } else if (uTextureType == 1) {
+          float diagonalA = abs((uv.x + uv.y * 0.55) - 0.46);
+          float diagonalB = abs((uv.x - uv.y * 0.52) + 0.04);
+          return min(equator * 0.85, min(diagonalA, diagonalB));
+        } else if (uTextureType == 2) {
+          float vertical = abs(uv.x - 0.5);
+          float bandA = abs(uv.y - 0.32);
+          float bandB = abs(uv.y - 0.68);
+          return min(vertical, min(bandA, bandB));
+        } else {
+          float diagonalCrossA = abs(uv.x - uv.y);
+          float diagonalCrossB = abs((uv.x + uv.y) - 1.0);
+          float ring = abs(length((uv - 0.5) * vec2(1.0, 1.15)) - 0.28);
+          return min(ring, min(diagonalCrossA * 0.72, diagonalCrossB * 0.72));
+        }
       }
 
       float seamMask(vec2 uv) {
@@ -315,9 +350,12 @@ function Basketball({
     ).normalize()
 
     // Обновляем позицию мяча
+    const viewportMotionFactor =
+      size.width < 640 ? 0.135 : size.width < 1024 ? 0.155 : 0.18
+
     const target = new THREE.Vector3(
-      pose.position[0] * viewport.width * 0.18,
-      pose.position[1] * viewport.height * 0.18,
+      pose.position[0] * viewport.width * viewportMotionFactor,
+      pose.position[1] * viewport.height * viewportMotionFactor,
       pose.position[2],
     )
     groupRef.current.position.lerp(target, 1 - Math.exp(-delta * 4.5))
@@ -337,8 +375,11 @@ function Basketball({
     }
 
     // Анимация масштаба
-    const sectionScaleFactor =
+    const baseSectionScale =
       scrollStage.sectionIndex === 1 || scrollStage.sectionIndex === 2 ? 1 : 0.84
+    const responsiveScaleFactor =
+      size.width < 640 ? 0.72 : size.width < 1024 ? 0.82 : 1
+    const sectionScaleFactor = baseSectionScale * responsiveScaleFactor
     const targetScale = pose.scale * (flight.isAnimatingToCart ? 0.73 : sectionScaleFactor)
     const scale = THREE.MathUtils.damp(groupRef.current.scale.x, targetScale, 5.5, delta)
     groupRef.current.scale.setScalar(scale)
@@ -387,6 +428,73 @@ function Basketball({
   )
 }
 
+function BasketballPreview({
+  customization,
+  lighting,
+}: BallPreview3DProps) {
+  const groupRef = useRef<THREE.Group>(null)
+  const material = useMemo(() => {
+    const defaultCustomization: Customization = {
+      baseColor: '#ff5a00',
+      lineColor: '#2c1810',
+      texture: 'CLASSIC',
+    }
+    return createBasketballShaderMaterial(customization || defaultCustomization)
+  }, [customization?.baseColor, customization?.lineColor, customization?.texture])
+
+  useFrame((state, delta) => {
+    if (!groupRef.current) return
+
+    material.uniforms.uTime.value = state.clock.elapsedTime
+    material.uniforms.uLightDir.value.set(
+      0.3 + state.pointer.x * 0.18,
+      0.82 + state.pointer.y * 0.1,
+      0.56,
+    ).normalize()
+
+    groupRef.current.rotation.y += delta * 0.65
+    groupRef.current.rotation.x = THREE.MathUtils.damp(
+      groupRef.current.rotation.x,
+      0.18 + state.pointer.y * 0.12,
+      4.5,
+      delta,
+    )
+    groupRef.current.rotation.z = THREE.MathUtils.damp(
+      groupRef.current.rotation.z,
+      state.pointer.x * 0.14,
+      4.5,
+      delta,
+    )
+    groupRef.current.scale.setScalar(1.16)
+  })
+
+  return (
+    <>
+      <group ref={groupRef}>
+        <mesh material={material}>
+          <sphereGeometry args={[1, 160, 160]} />
+        </mesh>
+      </group>
+
+      <ambientLight intensity={lighting?.ambient ?? 0.18} />
+      <directionalLight
+        position={[2.6, 3.8, 4.8]}
+        intensity={1.35}
+        color={lighting?.keyLight ?? '#fff3e0'}
+      />
+      <directionalLight
+        position={[-2.2, 1.8, 2.8]}
+        intensity={0.42}
+        color={lighting?.fillLight ?? '#ffb68a'}
+      />
+    </>
+  )
+}
+
 export function Ball3D(props: Ball3DProps) {
   return <Basketball {...props} />
+}
+
+export function BallPreview3D(props: BallPreview3DProps) {
+  return <BasketballPreview {...props} />
 }

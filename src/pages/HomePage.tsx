@@ -5,12 +5,15 @@ import {
 	ArrowRight,
 	Circle,
 	Dot,
+	Github,
 	Instagram,
+	Linkedin,
+	Send,
 	Twitter,
 	Youtube,
 } from 'lucide-react'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Ball3D } from '../components/Ball3D'
+import { Ball3D, BallPreview3D } from '../components/Ball3D'
 import { ChampionShowcase } from '../components/ChampionShowcase'
 import { Header } from '../components/Header'
 import { Hero } from '../components/Hero'
@@ -29,7 +32,13 @@ type Customization = {
 }
 
 type BallCatalogEntry =
-	| { name: string; mode: 'custom' }
+	| {
+		name: string
+		mode: 'custom'
+		baseColor: string
+		lineColor: string
+		texture: TextureType
+	}
 	| {
 		name: string
 		mode: 'preset'
@@ -39,7 +48,13 @@ type BallCatalogEntry =
 	}
 
 const BALL_CATALOG: BallCatalogEntry[] = [
-	{ name: 'Lab Edition', mode: 'custom' },
+	{
+		name: 'Lab Edition',
+		mode: 'custom',
+		baseColor: '#ff5a00',
+		lineColor: '#000000',
+		texture: 'CLASSIC',
+	},
 	{
 		name: 'Street Pro',
 		mode: 'preset',
@@ -119,6 +134,24 @@ const CHAMPION_PANEL = {
 	rightCopy: panels[3].stats[1][1],
 }
 
+const CONTACT_LINKS = [
+	{
+		label: 'Telegram',
+		href: 'https://t.me/',
+		icon: Send,
+	},
+	{
+		label: 'GitHub',
+		href: 'https://github.com/',
+		icon: Github,
+	},
+	{
+		label: 'LinkedIn',
+		href: 'https://www.linkedin.com/',
+		icon: Linkedin,
+	},
+]
+
 function createArcPoint(
 	start: FlightPoint,
 	control: FlightPoint,
@@ -144,10 +177,16 @@ function FloatingBall({
 	progress?: number
 }) {
 	const t = progress || 0
+	const viewportWidth =
+		typeof window === 'undefined' ? 1440 : window.innerWidth
+	const sizeMultiplier =
+		viewportWidth < 640 ? 0.56 : viewportWidth < 1024 ? 0.76 : 1
 
 	const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
 
-	const baseSize = visible ? Math.max(2, 12.5 * (1 - t * 0.9)) : 2
+	const baseSize = visible
+		? Math.max(1.6, 12.5 * sizeMultiplier * (1 - t * 0.9))
+		: 1.6
 	const size = `${baseSize}rem`
 
 	const opacity = visible ? Math.max(0.25, 1 - t * 0.85) : 0
@@ -185,13 +224,13 @@ function FloatingBall({
 				}}
 			>
 				<div
-					className='absolute inset-[6%] rounded-full border-[3px]'
+					className='absolute inset-[6%] rounded-full border-[2px] sm:border-[3px]'
 					style={{
 						borderColor: 'color-mix(in srgb, var(--ball-accent, #ff5a00) 55%, transparent)',
 					}}
 				/>
-				<div className='absolute inset-y-[10%] left-1/2 w-[3px] -translate-x-1/2 bg-black/80' />
-				<div className='absolute inset-x-[10%] top-1/2 h-[3px] -translate-y-1/2 bg-black/80' />
+				<div className='absolute inset-y-[10%] left-1/2 w-[2px] -translate-x-1/2 bg-black/80 sm:w-[3px]' />
+				<div className='absolute inset-x-[10%] top-1/2 h-[2px] -translate-y-1/2 bg-black/80 sm:h-[3px]' />
 			</div>
 
 			{[0, 1, 2, 3, 4].map((index) => {
@@ -203,7 +242,7 @@ function FloatingBall({
 
 				const isActive = t >= delay
 
-				const baseShadowSize = 320
+				const baseShadowSize = 320 * sizeMultiplier
 
 				const shadowSize = isActive
 					? Math.max(
@@ -269,10 +308,11 @@ function FloatingBall({
 function FooterSection() {
 	return (
 		<section
+			id='section-6'
 			data-section
-			className='relative flex h-screen items-center px-4 py-4 sm:px-6 lg:px-10'
+			className='relative flex h-[100svh] items-center px-4 py-6 sm:px-6 sm:py-8 lg:px-10'
 		>
-			<div className='section-scrim mx-auto flex h-full max-h-[100vh] w-full max-w-[1600px] flex-col justify-between overflow-hidden rounded-[2.5rem] px-6 py-8 sm:px-10'>
+			<div className='section-scrim mx-auto flex h-full w-full max-w-[1600px] flex-col justify-between overflow-hidden rounded-[2rem] px-5 py-8 sm:px-8 sm:py-10 lg:rounded-[2.5rem] lg:px-10'>
 				<div className='absolute inset-0 overflow-hidden'>
 					{Array.from({ length: 9 }).map((_, index) => (
 						<div
@@ -288,14 +328,32 @@ function FooterSection() {
 					))}
 				</div>
 
-				<div className='relative pt-16 text-center' data-reveal data-reveal-dir='top'>
+				<div className='relative pt-10 text-center sm:pt-16' data-reveal data-reveal-dir='top'>
 					<div className='border-theme-accent-soft mx-auto inline-flex rounded-full border px-4 py-1 text-xs uppercase tracking-[0.35em] text-theme-accent-muted'>
 						Next Level Performance
 					</div>
-					<div className='mt-10 font-display text-[clamp(4rem,14vw,12rem)] uppercase leading-[0.9]'>
+					<div className='mt-8 font-display text-[clamp(2.8rem,14vw,12rem)] uppercase leading-[0.9] sm:mt-10'>
 						<div className='text-white/10 text-stroke'>Defy</div>
 						<div>Gravity.</div>
 					</div>
+				</div>
+
+				<div className='relative mt-6 grid gap-3 sm:mt-8 sm:grid-cols-3'>
+					{CONTACT_LINKS.map(({ label, href, icon: Icon }) => (
+						<a
+							key={label}
+							href={href}
+							target='_blank'
+							rel='noreferrer'
+							className='flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-left transition hover:border-theme-accent-soft hover:bg-white/[0.05]'
+						>
+							<div>
+								<div className='text-[10px] uppercase tracking-[0.28em] text-white/40'>Contact</div>
+								<div className='mt-2 text-lg font-semibold text-white'>{label}</div>
+							</div>
+							<Icon className='text-theme-accent' size={20} />
+						</a>
+					))}
 				</div>
 
 				<div
@@ -303,8 +361,8 @@ function FooterSection() {
 					data-reveal
 					data-reveal-dir='bottom'
 				>
-					<div className='flex flex-col items-center justify-between gap-6 text-sm uppercase tracking-[0.3em] text-white/55 lg:flex-row'>
-						<div className='flex items-center gap-4'>
+					<div className='flex flex-col items-center justify-between gap-5 text-[11px] uppercase tracking-[0.24em] text-white/55 sm:text-sm sm:tracking-[0.3em] lg:flex-row'>
+						<div className='flex flex-wrap items-center justify-center gap-3 sm:gap-4'>
 							<Dot className='text-theme-accent' />
 							<span>Official Store</span>
 							<span className='hidden text-white/20 md:inline'>|</span>
@@ -318,10 +376,10 @@ function FooterSection() {
 						<div>Secure Checkout</div>
 					</div>
 
-					<div className='mt-10 flex justify-center'>
+					<div className='mt-8 flex justify-center sm:mt-10'>
 						<button
 							type='button'
-							className='inline-flex items-center gap-3 border border-white/20 bg-white px-8 py-5 text-lg font-bold uppercase tracking-[0.24em] text-black transition hover:bg-[color:var(--ball-accent)] hover:text-white'
+							className='inline-flex items-center gap-3 border border-white/20 bg-white px-5 py-4 text-sm font-bold uppercase tracking-[0.18em] text-black transition hover:bg-[color:var(--ball-accent)] hover:text-white sm:px-8 sm:py-5 sm:text-lg sm:tracking-[0.24em]'
 						>
 							Shop Collection
 							<ArrowRight size={18} />
@@ -354,25 +412,27 @@ export function HomePage() {
 	const [showFlyingBall, setShowFlyingBall] = useState(false)
 	const scrollStage = useScroll(6)
 	const ballScreenPointRef = useRef<FlightPoint | null>(null)
-	const [ballScreenPosition, setBallScreenPosition] = useState<FlightPoint | null>(null)
 
+	const [ballCatalog, setBallCatalog] = useState<BallCatalogEntry[]>(BALL_CATALOG)
 	const [activeBallIndex, setActiveBallIndex] = useState(0)
 	const [showCustomizePanel, setShowCustomizePanel] = useState(false)
-	const [customization, setCustomization] = useState<Customization>({
+	const [draftBallName, setDraftBallName] = useState('Lab Edition')
+	const [draftCustomization, setDraftCustomization] = useState<Customization>({
 		baseColor: '#ff5a00',
 		lineColor: '#000000',
 		texture: 'CLASSIC',
 	})
 
 	const resolvedCustomization = useMemo((): Customization => {
-		const entry = BALL_CATALOG[activeBallIndex]
-		if (!entry || entry.mode === 'custom') return customization
+		if (showCustomizePanel) return draftCustomization
+		const entry = ballCatalog[activeBallIndex]
+		if (!entry) return BALL_CATALOG[0]
 		return {
 			baseColor: entry.baseColor,
 			lineColor: entry.lineColor,
 			texture: entry.texture,
 		}
-	}, [activeBallIndex, customization])
+	}, [activeBallIndex, ballCatalog, draftCustomization, showCustomizePanel])
 
 	const sceneTheme = useMemo(
 		() => deriveBallSceneTheme(resolvedCustomization),
@@ -398,9 +458,6 @@ export function HomePage() {
 			let frameId: number
 
 			const updateBallPosition = () => {
-				if (ballScreenPointRef.current) {
-					setBallScreenPosition(ballScreenPointRef.current)
-				}
 				frameId = requestAnimationFrame(updateBallPosition)
 			}
 
@@ -469,124 +526,136 @@ export function HomePage() {
 		}
 	}, [])
 
-	// FIXED: Instant scroll response - no delay, immediate page switching
 	useEffect(() => {
 		const sections = Array.from(
-			document.querySelectorAll<HTMLElement>('[data-section]'),
+			document.querySelectorAll<HTMLElement>('[data-section]')
 		)
-		if (sections.length === 0) return
+
+		if (!sections.length) return
 
 		let isScrolling = false
-		let animationFrameId: number | null = null
-		let targetSectionIndex = 0
+		let lastGestureDirection = 0
+		let resetGestureTimer: number | undefined
+		let unlockTimer: number | undefined
+		let targetScrollY: number | null = null
 
-		const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3)
-		const duration = 320 // ms
+		const getSectionIndex = () => {
+			const scrollY = window.scrollY
+			let currentIndex = 0
 
-		const scrollToSection = (index: number) => {
-			const clampedIndex = Math.max(0, Math.min(sections.length - 1, index))
-
-			if (isScrolling) return
-			if (clampedIndex === currentSectionIndex()) return
-
-			isScrolling = true
-			targetSectionIndex = clampedIndex
-
-			const startY = window.scrollY
-			const targetY = sections[clampedIndex].offsetTop
-			const distance = targetY - startY
-			const startTime = performance.now()
-
-			const animateScroll = (currentTime: number) => {
-				const elapsed = currentTime - startTime
-				const progress = Math.min(1, elapsed / duration)
-				const eased = easeOutCubic(progress)
-
-				window.scrollTo(0, startY + distance * eased)
-
-				if (progress < 1) {
-					animationFrameId = requestAnimationFrame(animateScroll)
-				} else {
-					// Animation complete
-					if (animationFrameId) cancelAnimationFrame(animationFrameId)
-					animationFrameId = null
-
-					// Small delay before allowing next scroll to prevent rapid-fire
-					setTimeout(() => {
-						isScrolling = false
-					}, 40)
-				}
-			}
-
-			if (animationFrameId) cancelAnimationFrame(animationFrameId)
-			animationFrameId = requestAnimationFrame(animateScroll)
-		}
-
-		const currentSectionIndex = () => {
-			const scrollPosition = window.scrollY + window.innerHeight * 0.3
-			let closestIndex = 0
-			let closestDistance = Infinity
-
-			sections.forEach((section, idx) => {
-				const sectionTop = section.offsetTop
-				const sectionBottom = sectionTop + section.offsetHeight
-				const distance = Math.min(
-					Math.abs(scrollPosition - sectionTop),
-					Math.abs(scrollPosition - sectionBottom)
-				)
-
-				if (distance < closestDistance) {
-					closestDistance = distance
-					closestIndex = idx
+			sections.forEach((section, index) => {
+				if (scrollY >= section.offsetTop - window.innerHeight * 0.35) {
+					currentIndex = index
 				}
 			})
 
-			return closestIndex
+			return currentIndex
 		}
 
-		let lastScrollTime = 0
-		const SCROLL_COOLDOWN = 80 // мс между скроллами
+		const scrollToSection = (index: number) => {
+			if (isScrolling) return
+
+			const clampedIndex = Math.max(0, Math.min(sections.length - 1, index))
+			const targetSection = sections[clampedIndex]
+
+			if (!targetSection) return
+
+			isScrolling = true
+			targetScrollY = targetSection.offsetTop
+
+			window.scrollTo({
+				top: targetScrollY,
+				behavior: 'smooth',
+			})
+
+			if (unlockTimer) {
+				window.clearTimeout(unlockTimer)
+			}
+
+			// unlock через время
+			unlockTimer = window.setTimeout(() => {
+				if (targetScrollY !== null) {
+					window.scrollTo({
+						top: targetScrollY,
+						behavior: 'auto',
+					})
+				}
+
+				isScrolling = false
+				targetScrollY = null
+			}, 1100)
+		}
 
 		const handleWheel = (e: WheelEvent) => {
 			e.preventDefault()
 
-			// Защита от слишком частых скроллов
-			const now = Date.now()
-			if (isScrolling || now - lastScrollTime < SCROLL_COOLDOWN) return
+			if (isScrolling) return
+			if (Math.abs(e.deltaY) < 12) return
 
 			const direction = e.deltaY > 0 ? 1 : -1
-			const currentIdx = currentSectionIndex()
-			const nextIdx = currentIdx + direction
+			if (direction === lastGestureDirection) return
 
-			lastScrollTime = now
-			scrollToSection(nextIdx)
-		}
-
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if (e.repeat) return
-			if (isScrolling) return
-
-			if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
-				e.preventDefault()
-				scrollToSection(currentSectionIndex() + 1)
+			lastGestureDirection = direction
+			if (resetGestureTimer) {
+				window.clearTimeout(resetGestureTimer)
 			}
 
-			if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+			resetGestureTimer = window.setTimeout(() => {
+				lastGestureDirection = 0
+			}, 900)
+
+			scrollToSection(getSectionIndex() + direction)
+		}
+
+		const handleScroll = () => {
+			if (!isScrolling || targetScrollY === null) return
+
+			if (Math.abs(window.scrollY - targetScrollY) <= 4) {
+				window.scrollTo({
+					top: targetScrollY,
+					behavior: 'auto',
+				})
+
+				isScrolling = false
+				targetScrollY = null
+
+				if (unlockTimer) {
+					window.clearTimeout(unlockTimer)
+					unlockTimer = undefined
+				}
+			}
+		}
+
+		const handleKey = (e: KeyboardEvent) => {
+			if (isScrolling) return
+
+			if (e.key === 'ArrowDown') {
 				e.preventDefault()
-				scrollToSection(currentSectionIndex() - 1)
+				scrollToSection(getSectionIndex() + 1)
+			}
+
+			if (e.key === 'ArrowUp') {
+				e.preventDefault()
+				scrollToSection(getSectionIndex() - 1)
 			}
 		}
 
 		window.addEventListener('wheel', handleWheel, { passive: false })
-		window.addEventListener('keydown', handleKeyDown)
+		window.addEventListener('scroll', handleScroll, { passive: true })
+		window.addEventListener('keydown', handleKey)
 
 		return () => {
 			window.removeEventListener('wheel', handleWheel)
-			window.removeEventListener('keydown', handleKeyDown)
-			if (animationFrameId) cancelAnimationFrame(animationFrameId)
+			window.removeEventListener('scroll', handleScroll)
+			window.removeEventListener('keydown', handleKey)
+			if (resetGestureTimer) {
+				window.clearTimeout(resetGestureTimer)
+			}
+			if (unlockTimer) {
+				window.clearTimeout(unlockTimer)
+			}
 		}
 	}, [])
-
 	useEffect(() => {
 		if (flight.impulse <= 0) return
 
@@ -596,6 +665,65 @@ export function HomePage() {
 
 		return () => window.clearTimeout(timeout)
 	}, [flight.impulse])
+
+	const openCustomizePanel = () => {
+		const currentBall = ballCatalog[activeBallIndex]
+		if (!currentBall) return
+
+		setDraftBallName(currentBall.name)
+		setDraftCustomization({
+			baseColor: currentBall.baseColor,
+			lineColor: currentBall.lineColor,
+			texture: currentBall.texture,
+		})
+		setShowCustomizePanel(true)
+	}
+
+	const handleAddNewBall = () => {
+		const trimmedName = draftBallName.trim()
+		const nextBall: BallCatalogEntry = {
+			name: trimmedName || `Custom Ball ${ballCatalog.length + 1}`,
+			mode: 'custom',
+			baseColor: draftCustomization.baseColor,
+			lineColor: draftCustomization.lineColor,
+			texture: draftCustomization.texture,
+		}
+
+		setBallCatalog(current => {
+			const nextCatalog = [...current, nextBall]
+			setActiveBallIndex(nextCatalog.length - 1)
+			return nextCatalog
+		})
+		setShowCustomizePanel(false)
+	}
+
+	const previewTextureOverlay = useMemo(() => {
+		if (draftCustomization.texture === 'STREET') {
+			return {
+				background:
+					'repeating-linear-gradient(135deg, rgba(0,0,0,0.18) 0 12px, rgba(255,255,255,0.04) 12px 22px), radial-gradient(circle at 30% 28%, rgba(255,255,255,0.12), transparent 24%)',
+			}
+		}
+
+		if (draftCustomization.texture === 'TECH') {
+			return {
+				background:
+					'repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0 3px, transparent 3px 14px), repeating-linear-gradient(0deg, rgba(0,0,0,0.16) 0 4px, transparent 4px 18px)',
+			}
+		}
+
+		if (draftCustomization.texture === 'CROSS') {
+			return {
+				background:
+					'repeating-linear-gradient(45deg, rgba(255,255,255,0.1) 0 5px, transparent 5px 18px), repeating-linear-gradient(-45deg, rgba(0,0,0,0.2) 0 6px, transparent 6px 18px)',
+			}
+		}
+
+		return {
+			background:
+				'radial-gradient(circle at 30% 28%, rgba(255,255,255,0.12), transparent 24%), repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0 2px, transparent 2px 11px)',
+		}
+	}, [draftCustomization.texture])
 
 	const handleAddToCart = () => {
 		if (!cartRef.current || flight.isAnimatingToCart) return
@@ -662,10 +790,7 @@ export function HomePage() {
 			<Header
 				cartCount={cartCount}
 				cartRef={cartRef}
-				onCustomizeClick={() => {
-					setActiveBallIndex(0)
-					setShowCustomizePanel(true)
-				}}
+				onCustomizeClick={openCustomizePanel}
 			/>
 			<FloatingBall
 				point={flightPoint}
@@ -673,75 +798,182 @@ export function HomePage() {
 				progress={flightProgress}
 			/>
 
-			<aside
-				className={`fixed left-10 top-1/2 z-50 max-h-[min(90vh,40rem)] w-80 -translate-y-1/2 space-y-8 overflow-y-auto rounded-xl border border-[color:color-mix(in_srgb,var(--ball-accent)_38%,transparent)] bg-black/20 p-6 backdrop-blur-md ${showCustomizePanel ? 'flex flex-col' : 'hidden'}`}
-				aria-hidden={!showCustomizePanel}
-			>
-				<div className="flex items-start justify-between gap-3">
-					<div>
-						<p className="text-[10px] uppercase tracking-[0.28em] text-white/45">
-							Design your legacy
-						</p>
-						<p className="mt-1 text-sm text-white/60">Tune colors and grip for the Lab ball.</p>
-					</div>
-					<button
-						type="button"
-						onClick={() => setShowCustomizePanel(false)}
-						className="shrink-0 rounded-full border border-white/15 px-3 py-1 text-[10px] uppercase tracking-widest text-white/70 transition hover:border-white/35 hover:text-white"
-					>
-						Close
-					</button>
-				</div>
-				<div>
-					<label className="text-[10px] uppercase tracking-[0.2em] text-white/40">Base Color</label>
-					<div className="mt-3 flex gap-2 flex-wrap">
-						{['#ff5a00', '#004d3d', '#0070ad', '#7A172C', '#e879f9', '#1a1a1a', '#ffffff'].map(color => (
-							<button
-								key={color}
-								onClick={() => setCustomization(prev => ({ ...prev, baseColor: color }))}
-								className={`h-8 w-8 rounded-full border-2 transition-all ${customization.baseColor === color ? 'border-white scale-110' : 'border-transparent hover:scale-105'}`}
-								style={{ backgroundColor: color }}
-								aria-label={`Select base color ${color}`}
-							/>
-						))}
-					</div>
-				</div>
+			{showCustomizePanel ? (
+				<div className='fixed inset-0 z-[60] flex items-center justify-center bg-black/70 px-3 py-4 backdrop-blur-md sm:px-6'>
+					<div className='relative flex h-full max-h-[min(92svh,52rem)] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-[color:color-mix(in_srgb,var(--ball-accent)_45%,transparent)] bg-[radial-gradient(circle_at_top,color-mix(in_srgb,var(--ball-accent)_12%,transparent),transparent_42%),rgba(10,10,10,0.96)]'>
+						<div className='grid h-full w-full gap-0 lg:grid-cols-[minmax(0,1.15fr)_26rem]'>
+							<div className='flex min-h-[16rem] flex-col gap-6 overflow-y-auto border-b border-white/10 p-5 sm:p-8 lg:border-b-0 lg:border-r'>
+								<div>
+									<p className='text-[10px] uppercase tracking-[0.36em] text-theme-accent-muted'>
+										Ball Lab
+									</p>
+									<h2 className='mt-3 font-display text-[clamp(1.9rem,5vw,4rem)] uppercase leading-[0.92] text-white'>
+										Customize
+									</h2>
+									<p className='mt-2 max-w-xl text-sm leading-relaxed text-white/55 sm:text-base'>
+										Create a new ball, tune its finish, then add it to the main ball list.
+									</p>
+								</div>
+								<div className='flex flex-col'>
+									<div className='relative flex  py-[15px] min-h-[15rem] items-center justify-center overflow-hidden rounded-[2rem] border border-white/10 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06),transparent_58%)] sm:min-h-[18rem]'>
+										<div className='pointer-events-none  absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,0.08),transparent_34%)]' />
+										<div className='pointer-events-none absolute bottom-6 h-8 w-[52%] rounded-full bg-black/50 blur-xl sm:h-10' />
+										<Canvas
+											dpr={[1, 1.6]}
+											camera={{ position: [0, 0, 4.2], fov: 32 }}
+										>
+											<BallPreview3D
+												customization={draftCustomization}
+												lighting={{
+													keyLight: sceneTheme.keyLight,
+													fillLight: sceneTheme.fillLight,
+													ambient: Math.max(sceneTheme.ambient, 0.16),
+												}}
+											/>
+										</Canvas>
+										<div
+											className='pointer-events-none absolute left-1/2 top-1/2 aspect-square w-[min(46vw,16rem)] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-80 mix-blend-soft-light sm:w-[min(40vw,18rem)]'
+											style={{ background: previewTextureOverlay.background }}
+										/>
+										<div
+											className='pointer-events-none absolute left-1/2 top-[75%] w-[min(34vw,11rem)] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-black/35 px-3 py-2 text-center backdrop-blur-sm sm:w-[min(30vw,12rem)]'
+										>
+											<div className='font-display text-[clamp(0.7rem,1.4vw,1rem)] uppercase tracking-[0.16em] text-white/90'>
+												{draftBallName || 'New Ball'}
+											</div>
+										</div>
+									</div>
+								</div>
+								<div className='rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4 sm:p-6'>
+									<p className='text-[10px] uppercase tracking-[0.3em] text-white/40'>
+										Preview Stats
+									</p>
+									<div className='mt-4 grid gap-4 sm:grid-cols-3'>
+										<div>
+											<div className='text-[10px] uppercase tracking-[0.25em] text-white/35'>Base</div>
+											<div className='mt-2 flex items-center gap-3'>
+												<span className='h-5 w-5 rounded-full border border-white/20' style={{ backgroundColor: draftCustomization.baseColor }} />
+												<span className='text-sm text-white/80'>{draftCustomization.baseColor}</span>
+											</div>
+										</div>
+										<div>
+											<div className='text-[10px] uppercase tracking-[0.25em] text-white/35'>Lines</div>
+											<div className='mt-2 flex items-center gap-3'>
+												<span className='h-5 w-5 rounded-full border border-white/20' style={{ backgroundColor: draftCustomization.lineColor }} />
+												<span className='text-sm text-white/80'>{draftCustomization.lineColor}</span>
+											</div>
+										</div>
+										<div>
+											<div className='text-[10px] uppercase tracking-[0.25em] text-white/35'>Texture</div>
+											<div className='mt-2 text-sm text-white/80'>{draftCustomization.texture}</div>
+										</div>
+									</div>
+								</div>
+							</div>
 
-				<div>
-					<label className="text-[10px] uppercase tracking-[0.2em] text-white/40">Line Color</label>
-					<div className="mt-3 flex gap-2 flex-wrap">
-						{['#1a1a1a', '#ffffff', '#ffb800', '#a0ff9e', '#00e0ff'].map(color => (
-							<button
-								key={color}
-								onClick={() => setCustomization(prev => ({ ...prev, lineColor: color }))}
-								className={`h-8 w-8 rounded-full border-2 transition-all ${customization.lineColor === color ? 'border-white scale-110' : 'border-transparent hover:scale-105'}`}
-								style={{ backgroundColor: color }}
-								aria-label={`Select line color ${color}`}
-							/>
-						))}
-					</div>
-				</div>
+							<div className='flex h-full flex-col gap-6 overflow-y-auto p-5 sm:p-8'>
+								<div className='flex items-start justify-between gap-3'>
+									<div>
+										<p className='text-[10px] uppercase tracking-[0.28em] text-white/45'>
+											Design your legacy
+										</p>
+										<p className='mt-1 text-xs text-white/60 sm:text-sm'>
+											Build a custom ball and push it into the carousel.
+										</p>
+									</div>
+									<button
+										type='button'
+										onClick={() => setShowCustomizePanel(false)}
+										className='shrink-0 rounded-full border border-white/15 px-3 py-1 text-[10px] uppercase tracking-widest text-white/70 transition hover:border-white/35 hover:text-white'
+									>
+										Back
+									</button>
+								</div>
 
-				<div>
-					<label className="text-[10px] uppercase tracking-[0.2em] text-white/40">Grip Texture</label>
-					<div className="mt-3 grid grid-cols-2 gap-2">
-						{['CLASSIC', 'STREET', 'TECH', 'CROSS'].map(t => (
-							<button
-								key={t}
-								onClick={() =>
-									setCustomization(prev => ({
-										...prev,
-										texture: t as TextureType,
-									}))
-								}
-								className={`py-2 text-[10px] font-bold border transition-all ${customization.texture === t ? 'bg-white text-black border-white' : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white/80'}`}
-							>
-								{t}
-							</button>
-						))}
+								<div>
+									<label className='text-[10px] uppercase tracking-[0.2em] text-white/40'>
+										Ball Name
+									</label>
+									<input
+										type='text'
+										value={draftBallName}
+										onChange={event => setDraftBallName(event.target.value)}
+										placeholder='My Signature Ball'
+										className='mt-3 w-full rounded-xl border border-white/15 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-white/35'
+									/>
+								</div>
+
+								<div>
+									<label className='text-[10px] uppercase tracking-[0.2em] text-white/40'>Base Color</label>
+									<div className='mt-3 flex flex-wrap gap-2'>
+										{['#ff5a00', '#004d3d', '#0070ad', '#7A172C', '#e879f9', '#1a1a1a', '#ffffff'].map(color => (
+											<button
+												key={color}
+												onClick={() => setDraftCustomization(prev => ({ ...prev, baseColor: color }))}
+												className={`h-9 w-9 rounded-full border-2 transition-all ${draftCustomization.baseColor === color ? 'border-white scale-110' : 'border-transparent hover:scale-105'}`}
+												style={{ backgroundColor: color }}
+												aria-label={`Select base color ${color}`}
+											/>
+										))}
+									</div>
+								</div>
+
+								<div>
+									<label className='text-[10px] uppercase tracking-[0.2em] text-white/40'>Line Color</label>
+									<div className='mt-3 flex flex-wrap gap-2'>
+										{['#1a1a1a', '#ffffff', '#ffb800', '#a0ff9e', '#00e0ff'].map(color => (
+											<button
+												key={color}
+												onClick={() => setDraftCustomization(prev => ({ ...prev, lineColor: color }))}
+												className={`h-9 w-9 rounded-full border-2 transition-all ${draftCustomization.lineColor === color ? 'border-white scale-110' : 'border-transparent hover:scale-105'}`}
+												style={{ backgroundColor: color }}
+												aria-label={`Select line color ${color}`}
+											/>
+										))}
+									</div>
+								</div>
+
+								<div>
+									<label className='text-[10px] uppercase tracking-[0.2em] text-white/40'>Grip Texture</label>
+									<div className='mt-3 grid grid-cols-2 gap-3'>
+										{['CLASSIC', 'STREET', 'TECH', 'CROSS'].map(t => (
+											<button
+												key={t}
+												onClick={() =>
+													setDraftCustomization(prev => ({
+														...prev,
+														texture: t as TextureType,
+													}))
+												}
+												className={`border py-3 text-[10px] font-bold tracking-[0.24em] transition-all ${draftCustomization.texture === t ? 'bg-white text-black border-white' : 'border-white/20 text-white/60 hover:border-white/40 hover:text-white/80'}`}
+											>
+												{t}
+											</button>
+										))}
+									</div>
+								</div>
+
+								<div className='mt-auto flex flex-col gap-3 pt-4 sm:flex-row'>
+									<button
+										type='button'
+										onClick={() => setShowCustomizePanel(false)}
+										className='flex-1 rounded-xl border border-white/15 px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white/75 transition hover:border-white/35 hover:text-white'
+									>
+										Back
+									</button>
+									<button
+										type='button'
+										onClick={handleAddNewBall}
+										className='flex-1 rounded-xl border border-[color:color-mix(in_srgb,var(--ball-accent)_45%,transparent)] bg-[color:var(--ball-accent)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:brightness-110'
+									>
+										Add New Ball
+									</button>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
-			</aside>
+			) : null}
 
 			<div className='pointer-events-none fixed inset-0 z-20'>
 				<Canvas
@@ -765,7 +997,6 @@ export function HomePage() {
 						}}
 						onBallScreenPoint={(point: FlightPoint) => {
 							ballScreenPointRef.current = point
-							setBallScreenPosition(point)
 						}}
 					/>
 				</Canvas>
@@ -782,39 +1013,41 @@ export function HomePage() {
 						ballAnchorRef={ballAnchorRef}
 						activeBallIndex={activeBallIndex}
 						setActiveBallIndex={setActiveBallIndex}
-						ballData={BALL_CATALOG.map(b => ({ name: b.name }))}
+						ballData={ballCatalog.map(b => ({ name: b.name }))}
 					/>
 				</div>
 
 				<section
 					id='section-2'
 					data-section
-					className='relative flex h-screen items-center px-4 py-4 sm:px-6 lg:px-10'
+					className='relative flex h-[100svh] items-center px-4 py-6 sm:px-6 sm:py-8 lg:px-10'
 				>
-					<div className='section-scrim mx-auto grid h-full max-h-[100vh] w-full max-w-[1600px] overflow-hidden rounded-2xl px-6 py-12 lg:grid-cols-[420px_1fr] lg:px-10'>
-						<div className='space-y-12' data-reveal data-reveal-dir='left'>
+					<div className='section-scrim mx-auto grid h-full w-full max-w-[1600px] overflow-hidden rounded-2xl px-5 py-8 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,420px)_1fr] lg:px-10 lg:py-12'>
+						<div className='space-y-8 sm:space-y-10 lg:space-y-12' data-reveal data-reveal-dir='left'>
 							<div>
-								<div className='mb-4 flex items-center gap-3 text-sm uppercase tracking-[0.18em] text-theme-accent'>
+								<div className='mb-4 flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-theme-accent sm:text-sm'>
 									<Circle size={8} fill='currentColor' />
 									{panels[0].eyebrow}
 								</div>
-								<h2 className='font-display text-[clamp(4rem,9vw,8rem)] uppercase leading-[0.88]'>
+								<h2 className='font-display text-[clamp(2.8rem,12vw,8rem)] uppercase leading-[0.9] sm:leading-[0.88]'>
 									{panels[0].title}
 								</h2>
 							</div>
-							{panels[0].stats.map(([value, label], index) => (
-								<div key={value} className='border-l border-white/15 pl-6'>
-									<div className='text-6xl font-bold leading-none'>{value}</div>
-									<div className='mt-2 text-xl uppercase tracking-[0.18em] text-white/55'>
-										{label}
+							<div className="flex flex-col gap-6 sm:flex-row sm:gap-8">
+								{panels[0].stats.map(([value, label], index) => (
+									<div key={value} className='border-l border-white/15 pl-4 sm:pl-6'>
+										<div className='text-4xl font-bold leading-none sm:text-6xl'>{value}</div>
+										<div className='mt-2 text-sm uppercase tracking-[0.18em] text-white/55 sm:text-xl'>
+											{label}
+										</div>
+										{index === 0 ? (
+											<p className='mt-4 max-w-xs text-sm leading-relaxed text-white/48 sm:text-lg'>
+												{panels[0].copy}
+											</p>
+										) : null}
 									</div>
-									{index === 0 ? (
-										<p className='mt-4 max-w-xs text-lg leading-relaxed text-white/48'>
-											{panels[0].copy}
-										</p>
-									) : null}
-								</div>
-							))}
+								))}
+							</div>
 						</div>
 						<div className='hidden bg-grid bg-[size:180px_180px] opacity-40 lg:block' />
 					</div>
@@ -823,27 +1056,29 @@ export function HomePage() {
 				<section
 					id='section-3'
 					data-section
-					className='relative flex h-screen items-center px-4 py-4 sm:px-6 lg:px-10'
+					className='relative flex h-[100svh] items-center px-4 py-6 sm:px-6 sm:py-8 lg:px-10'
 				>
-					<div className='panel-line section-scrim mx-auto h-full max-h-[100vh] w-full max-w-[1600px] overflow-hidden rounded-2xl px-6 py-12 sm:px-10'>
-						<div className='grid gap-10 lg:grid-cols-[1fr_500px]'>
+					<div className='panel-line section-scrim mx-auto h-full w-full max-w-[1600px] overflow-hidden rounded-2xl px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12'>
+						<div className='grid gap-8 lg:grid-cols-[1fr_minmax(320px,500px)] lg:gap-10'>
 							<div />
-							<div className='space-y-12 text-right' data-reveal data-reveal-dir='right'>
+							<div className='space-y-8 text-left sm:space-y-10 lg:space-y-12 lg:text-right' data-reveal data-reveal-dir='right'>
 								<div className='ml-auto inline-flex rounded-full border border-white/20 px-4 py-1 text-xs uppercase tracking-[0.3em] text-white/75'>
 									{panels[1].eyebrow}
 								</div>
-								<h2 className='font-display text-[clamp(4rem,9vw,8rem)] uppercase leading-[0.88]'>
+								<h2 className='font-display text-[clamp(2.8rem,12vw,8rem)] uppercase leading-[0.9] sm:leading-[0.88]'>
 									{panels[1].title}
 								</h2>
-								{panels[1].stats.map(([value, label]) => (
-									<div key={value} className='ml-auto max-w-sm'>
-										<div className='text-5xl font-bold'>{value}</div>
-										<div className='text-sm uppercase tracking-[0.3em] text-white/55'>
-											{label}
+								<div className="flex flex-col gap-5 sm:flex-row sm:justify-end sm:gap-8">
+									{panels[1].stats.map(([value, label]) => (
+										<div key={value} className='max-w-sm lg:ml-auto'>
+											<div className='text-4xl font-bold sm:text-6xl'>{value}</div>
+											<div className='text-sm uppercase tracking-[0.3em] text-white/55'>
+												{label}
+											</div>
 										</div>
-									</div>
-								))}
-								<p className='ml-auto max-w-lg text-lg leading-relaxed text-white/50'>
+									))}
+								</div>
+								<p className='max-w-lg text-sm leading-relaxed text-white/50 sm:text-lg lg:ml-auto'>
 									{panels[1].copy}
 								</p>
 							</div>
@@ -854,14 +1089,14 @@ export function HomePage() {
 				<section
 					id='section-4'
 					data-section
-					className='relative flex h-screen items-center px-4 py-4 sm:px-6 lg:px-10'
+					className='relative flex h-[100svh] items-center px-4 py-6 sm:px-6 sm:py-8 lg:px-10'
 				>
-					<div className='section-scrim mx-auto h-full max-h-[100vh] w-full max-w-[1600px] overflow-hidden rounded-2xl px-6 py-10 sm:px-10'>
-						<div className='grid h-full items-center gap-8 lg:grid-cols-[300px_1fr_320px]'>
-							<div className='space-y-8' data-reveal data-reveal-dir='left'>
+					<div className='section-scrim mx-auto h-full w-full max-w-[1600px] overflow-hidden rounded-2xl px-5 py-8 sm:px-8 sm:py-10 lg:px-10'>
+						<div className='grid h-full items-center gap-8 lg:grid-cols-[240px_minmax(0,1fr)_260px] xl:grid-cols-[300px_minmax(0,1fr)_320px]'>
+							<div className='order-2 space-y-6 text-center lg:order-1 lg:space-y-8 lg:text-left' data-reveal data-reveal-dir='left'>
 								<div className='border-l border-white/20 pl-6'>
-									<div className='text-6xl font-bold'>1.2mm</div>
-									<div className='text-2xl uppercase tracking-[0.18em] text-white/55'>
+									<div className='text-4xl font-bold sm:text-6xl'>1.2mm</div>
+									<div className='text-lg uppercase tracking-[0.18em] text-white/55 sm:text-2xl'>
 										Pebble Height
 									</div>
 								</div>
@@ -870,10 +1105,10 @@ export function HomePage() {
 								</div>
 							</div>
 
-							<div className='relative flex h-[35rem] items-center justify-center'>
-								<div className='absolute h-[32.5rem] w-[32.5rem] rounded-full border border-white/12' />
-								<div className='absolute h-[25rem] w-[25rem] rounded-full border border-white/18' />
-								<div className='absolute h-[16.9rem] w-[16.9rem] rounded-full border-2 border-white/22' />
+							<div className='order-1 relative flex h-[18rem] items-center justify-center sm:h-[24rem] lg:order-2 lg:h-[30rem] xl:h-[35rem]'>
+								<div className='absolute h-[16rem] w-[16rem] rounded-full border border-white/12 sm:h-[22rem] sm:w-[22rem] lg:h-[28rem] lg:w-[28rem] xl:h-[32.5rem] xl:w-[32.5rem]' />
+								<div className='absolute h-[12rem] w-[12rem] rounded-full border border-white/18 sm:h-[16rem] sm:w-[16rem] lg:h-[22rem] lg:w-[22rem] xl:h-[25rem] xl:w-[25rem]' />
+								<div className='absolute h-[8rem] w-[8rem] rounded-full border-2 border-white/22 sm:h-[11rem] sm:w-[11rem] lg:h-[14.5rem] lg:w-[14.5rem] xl:h-[16.9rem] xl:w-[16.9rem]' />
 								<div className='absolute h-full w-px bg-white/25' />
 								<div className='absolute w-full border-t border-white/25' />
 								{Array.from({ length: 8 }).map((_, index) => (
@@ -881,13 +1116,13 @@ export function HomePage() {
 										key={index}
 										className='bg-theme-tick absolute h-2 w-[3px] rounded-full'
 										style={{
-											transform: `rotate(${index * 45}deg) translateY(-14.375rem)`,
+											transform: `rotate(${index * 45}deg) translateY(clamp(-7rem, -16vw, -14.375rem))`,
 										}}
 									/>
 								))}
 							</div>
 
-							<div className='space-y-8 text-right' data-reveal data-reveal-dir='right'>
+							<div className='order-3 space-y-6 text-center lg:space-y-8 lg:text-right' data-reveal data-reveal-dir='right'>
 								<div className='text-xs uppercase tracking-[0.35em] text-white/38'>
 									Azimuth: 45.2 deg
 								</div>
@@ -895,7 +1130,7 @@ export function HomePage() {
 									<h2 className='text-[clamp(2.6rem,6vw,4.3rem)] font-bold leading-none'>
 										High-Tack
 									</h2>
-									<div className='text-xl uppercase tracking-[0.25em] text-white/50'>
+									<div className='text-sm uppercase tracking-[0.25em] text-white/50 sm:text-xl'>
 										Coating Spec
 									</div>
 								</div>
@@ -910,9 +1145,9 @@ export function HomePage() {
 				<section
 					id='section-5'
 					data-section
-					className='relative flex h-screen items-center px-3 py-6 sm:px-6 lg:px-10'
+					className='relative flex h-[100svh] items-center px-3 py-6 sm:px-6 sm:py-8 lg:px-10'
 				>
-					<div className='mx-auto w-full max-w-[1600px] px-2 py-6 sm:px-4 sm:py-8'>
+					<div className='mx-auto flex h-full w-full max-w-[1600px] px-2 py-4 sm:px-4 sm:py-8'>
 						<ChampionShowcase panel={CHAMPION_PANEL} />
 					</div>
 				</section>

@@ -22,8 +22,8 @@
 
 html {
 	scroll-behavior: auto;
-	scroll-snap-type: none;
 }
+
 
 body {
 	margin: 0;

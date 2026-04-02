@@ -25,7 +25,7 @@ const PODIUM_SVG = '/podium.svg'
 export function ChampionShowcase({ panel }: ChampionShowcaseProps) {
 	return (
 		<div
-			className='relative mx-auto w-full max-w-[1500px] overflow-hidden rounded-[1.75rem] border border-[color:color-mix(in_srgb,var(--ball-accent)_42%,transparent)] bg-black/25 backdrop-blur-xl sm:rounded-[2.25rem]'
+			className='relative mx-auto flex h-full w-full max-w-[1500px] flex-col overflow-hidden rounded-[1.75rem] border border-[color:color-mix(in_srgb,var(--ball-accent)_42%,transparent)] bg-black/25 backdrop-blur-xl sm:rounded-[2.25rem]'
 			data-reveal
 			data-reveal-dir='bottom'
 		>
@@ -41,7 +41,7 @@ export function ChampionShowcase({ panel }: ChampionShowcaseProps) {
 				aria-hidden
 			/>
 
-			<div className='relative px-4 pb-10 pt-10 sm:px-8 sm:pb-14 sm:pt-12 md:px-12'>
+			<div className='relative flex h-full flex-col justify-center px-4 pb-8 pt-8 sm:px-8 sm:pb-12 sm:pt-10 md:px-12 md:pb-14 md:pt-12'>
 				<div className='text-center' data-reveal data-reveal-dir='top'>
 					<p className='text-[10px] uppercase tracking-[0.55em] text-white/55 sm:text-xs sm:tracking-[0.5em]'>
 						{panel.eyebrow}
@@ -51,35 +51,35 @@ export function ChampionShowcase({ panel }: ChampionShowcaseProps) {
 					</h2>
 				</div>
 
-				<div className='mt-10 grid items-center gap-10 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:gap-6 lg:mt-14'>
-					<div className='space-y-4 text-left lg:max-w-sm lg:justify-self-end' data-reveal data-reveal-dir='left'>
+				<div className='mt-8 grid items-center gap-8 lg:mt-14 lg:grid-cols-[1fr_minmax(260px,400px)_1fr] lg:gap-6'>
+					<div className='order-2 space-y-4 text-center lg:order-1 lg:max-w-sm lg:justify-self-end lg:text-left' data-reveal data-reveal-dir='left'>
 						<p className='font-mono text-[11px] uppercase tracking-[0.38em] text-[color:var(--ball-accent)] sm:text-sm sm:tracking-[0.32em]'>
 							{panel.leftLabel}
 						</p>
 						<p className='text-3xl font-bold leading-tight text-white sm:text-4xl'>
 							{panel.leftTitle}
 						</p>
-						<p className='max-w-sm text-base leading-relaxed text-white/48'>
+						<p className='mx-auto max-w-sm text-sm leading-relaxed text-white/48 sm:text-base lg:mx-0'>
 							{panel.leftCopy}
 						</p>
 					</div>
 
 					<div
-						className='relative flex min-h-[280px] flex-col items-center justify-end sm:min-h-[380px]'
+						className='order-1 relative flex min-h-[240px] flex-col items-center justify-end sm:min-h-[320px] lg:order-2 lg:min-h-[380px]'
 						data-reveal
 						data-reveal-dir='bottom'
 					>
 						<ChampionSpherePedestal />
 					</div>
 
-					<div className='space-y-4 text-left lg:max-w-sm lg:text-right' data-reveal data-reveal-dir='right'>
+					<div className='order-3 space-y-4 text-center lg:max-w-sm lg:text-right' data-reveal data-reveal-dir='right'>
 						<p className='font-mono text-[11px] uppercase tracking-[0.38em] text-[color:var(--ball-accent)] sm:text-sm sm:tracking-[0.32em]'>
 							{panel.rightLabel}
 						</p>
 						<p className='text-3xl font-bold leading-tight text-white sm:text-4xl lg:ml-auto'>
 							{panel.rightTitle}
 						</p>
-						<p className='max-w-sm text-base leading-relaxed text-white/48 lg:ml-auto'>
+						<p className='mx-auto max-w-sm text-sm leading-relaxed text-white/48 sm:text-base lg:ml-auto'>
 							{panel.rightCopy}
 						</p>
 					</div>
@@ -97,7 +97,7 @@ function ChampionSpherePedestal() {
 		<div className='relative mx-auto flex w-full max-w-[min(100%,440px)] flex-col items-center justify-end'>
 			{/* Сфера — над постаментом */}
 			<div
-				className='relative z-20 -mb-[min(14vw,56px)] aspect-square w-[min(42vw,200px)] rounded-full sm:-mb-16 sm:w-[min(48vw,240px)]'
+				className='relative z-20 -mb-[min(12vw,38px)] aspect-square w-[min(40vw,150px)] rounded-full sm:-mb-12 sm:w-[min(42vw,200px)] lg:-mb-16 lg:w-[min(48vw,240px)]'
 				style={{
 					background: `
 						radial-gradient(circle at 32% 28%,
@@ -134,8 +134,8 @@ function ChampionSpherePedestal() {
 			</div>
 
 			{/* Фото постамента: белый фон убираем через multiply; подсветка снизу */}
-			<div className='relative z-10 w-full max-w-[360px] px-2'>
-				<div className='pointer-events-none absolute -bottom-4 left-1/2 h-16 w-[90%] -translate-x-1/2 rounded-full bg-black/50 blur-2xl' aria-hidden />
+			<div className='relative z-10 w-full max-w-[320px] px-2 sm:max-w-[360px]'>
+				<div className='pointer-events-none absolute -bottom-3 left-1/2 h-12 w-[88%] -translate-x-1/2 rounded-full bg-black/50 blur-xl sm:-bottom-4 sm:h-16 sm:blur-2xl' aria-hidden />
 				<img
 					src={src}
 					alt=''
