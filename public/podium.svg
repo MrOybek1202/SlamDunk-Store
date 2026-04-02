@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" width="400" height="320" fill="none">
+	<defs>
+		<linearGradient id="p1" x1="200" y1="40" x2="200" y2="300" gradientUnits="userSpaceOnUse">
+			<stop offset="0%" stop-color="#2a2a2a"/>
+			<stop offset="100%" stop-color="#050505"/>
+		</linearGradient>
+		<linearGradient id="p2" x1="200" y1="120" x2="200" y2="300" gradientUnits="userSpaceOnUse">
+			<stop offset="0%" stop-color="#1a1a1a"/>
+			<stop offset="100%" stop-color="#030303"/>
+		</linearGradient>
+		<ellipse id="rim" cx="200" cy="0" rx="1" ry="1" fill="#1f1f1f" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+	</defs>
+	<!-- =86=89 H8@>:89 F8;8=4@ -->
+	<ellipse cx="200" cy="268" rx="175" ry="26" fill="#080808" stroke="rgba(255,255,255,0.08)"/>
+	<path d="M25 268 L25 180 Q200 165 375 180 L375 268 Q200 290 25 268Z" fill="url(#p2)"/>
+	<ellipse cx="200" cy="180" rx="175" ry="26" fill="#121212" stroke="rgba(255,255,255,0.1)"/>
+	<!-- 25@E=89 C7:89 -->
+	<path d="M95 180 L95 95 Q200 78 305 95 L305 180 Q200 168 95 180Z" fill="url(#p1)"/>
+	<ellipse cx="200" cy="95" rx="105" ry="18" fill="#1c1c1c" stroke="rgba(255,255,255,0.18)"/>
+	<ellipse cx="200" cy="95" rx="105" ry="18" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+	<!-- 25@E=OO ?;>I04:0 -->
+	<ellipse cx="200" cy="52" rx="88" ry="14" fill="#0d0d0d" stroke="rgba(255,255,255,0.2)"/>
+	<ellipse cx="200" cy="52" rx="88" ry="14" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>
+</svg>

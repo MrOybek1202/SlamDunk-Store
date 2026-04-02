@@ -1,0 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	color-scheme: dark;
+	font-family: 'Rajdhani', sans-serif;
+	--ball-accent: #ff5a00;
+	--ball-accent-muted: rgba(255, 90, 0, 0.45);
+	--ball-bg-deep: #050505;
+	--ball-radial-top: rgba(15, 67, 56, 0.22);
+	--ball-radial-center: rgba(255, 90, 0, 0.08);
+	--ball-radial-floor: rgba(0, 0, 0, 0);
+	--ball-selection: rgba(255, 90, 0, 0.92);
+	--ball-base: #ff5a00;
+	--ball-line: #1a1a1a;
+	background-color: var(--ball-bg-deep);
+	color: white;
+}
+
+html {
+	scroll-behavior: auto;
+	scroll-snap-type: none;
+}
+
+body {
+	margin: 0;
+	min-width: 320px;
+	min-height: 100vh;
+	transition:
+		background-color 0.85s ease,
+		background 0.85s ease;
+	background:
+		radial-gradient(circle at 50% 18%, var(--ball-radial-top), transparent 32%),
+		radial-gradient(circle at 50% 50%, var(--ball-radial-center), transparent 24%),
+		radial-gradient(ellipse at 50% 100%, var(--ball-radial-floor), transparent 48%),
+		var(--ball-bg-deep);
+	color: white;
+}
+
+#root {
+	min-height: 100vh;
+	background: transparent;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+::selection {
+	background: var(--ball-selection);
+	color: white;
+}
+
+.text-stroke {
+	-webkit-text-stroke: 1px rgba(255, 255, 255, 0.16);
+	color: transparent;
+}
+
+.hero-word {
+	line-height: 0.86;
+	letter-spacing: 0.04em;
+}
+
+/* ~85% прозрачность панелей — виден динамический фон body */
+.section-scrim {
+	background-color: rgba(0, 0, 0, 0.15);
+	-webkit-backdrop-filter: blur(14px);
+	backdrop-filter: blur(14px);
+}
+
+.panel-line {
+	position: relative;
+}
+
+.panel-line::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.noise {
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	opacity: 0.06;
+	mix-blend-mode: overlay;
+	z-index: 1;
+
+	background-image:
+		radial-gradient(circle at 10% 20%,
+			rgba(255, 255, 255, 0.4) 0 0.6px,
+			transparent 1px),
+		radial-gradient(circle at 80% 40%,
+			rgba(255, 255, 255, 0.3) 0 0.7px,
+			transparent 1px),
+		radial-gradient(circle at 50% 90%,
+			rgba(255, 255, 255, 0.2) 0 0.8px,
+			transparent 1px),
+		radial-gradient(circle at 30% 60%,
+			rgba(255, 255, 255, 0.15) 0 0.9px,
+			transparent 1px);
+
+	background-size: 120px 120px;
+	transition: opacity 0.85s ease;
+}
+
+.noise::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	mix-blend-mode: soft-light;
+	opacity: 0.55;
+	transition: background 0.85s ease;
+	background: radial-gradient(
+		ellipse 120% 70% at 50% -10%,
+		color-mix(in srgb, var(--ball-accent) 22%, transparent),
+		transparent 55%
+	);
+}
+
+/* Тема мяча: Tailwind /opacity с var() даёт старый оранж — явные утилиты */
+@layer utilities {
+	.text-theme-accent {
+		color: var(--ball-accent);
+	}
+	.text-theme-accent-muted {
+		color: color-mix(in srgb, var(--ball-accent) 70%, white);
+	}
+	.border-theme-accent-soft {
+		border-color: color-mix(in srgb, var(--ball-accent) 42%, transparent);
+	}
+	.bg-theme-accent {
+		background-color: var(--ball-accent);
+	}
+	.bg-theme-accent-muted {
+		background-color: color-mix(in srgb, var(--ball-accent) 88%, transparent);
+	}
+	.bg-theme-tick {
+		background-color: color-mix(in srgb, var(--ball-accent) 80%, transparent);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--ball-accent) 55%, transparent);
+	}
+	.shadow-theme-glow {
+		box-shadow: 0 0 36px color-mix(in srgb, var(--ball-accent) 45%, transparent);
+	}
+	.ring-pedestal-top {
+		box-shadow:
+			0 0 28px color-mix(in srgb, var(--ball-accent) 42%, transparent),
+			inset 0 2px 0 color-mix(in srgb, var(--ball-accent) 22%, transparent),
+			inset 0 -8px 16px rgba(0, 0, 0, 0.75);
+	}
+}
