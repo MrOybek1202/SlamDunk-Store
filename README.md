@@ -1,3 +1,28 @@
+# 🏀 SlamDunk Store
+
+> E-commerce platform for basketball enthusiasts - Shop shoes, apparel, and accessories with a seamless checkout experience.
+
+## 🛍️ Features
+- **Product Catalog** - Browse basketball shoes and apparel
+- **Shopping Cart** - Add/remove items with real-time updates
+- **Secure Checkout** - Safe payment processing
+- **User Accounts** - Track orders and save favorites
+- **Search & Filter** - Find products quickly
+- **Order History** - View past purchases
+
+## 💻 Tech Stack
+- **Frontend:** React.js, Redux, Tailwind CSS
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB
+- **Payment:** Stripe Integration
+- **Hosting:** Vercel
+
+## 🚀 Setup Instructions
+```bash
+git clone https://github.com/MrOybek1202/SlamDunk-Store.git
+cd SlamDunk-Store
+npm install
+npm start
 # Slam Dunk Store
 
 <p align="center">
