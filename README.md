@@ -1,4 +1,4 @@
-# 🏀 SlamDunk Store
+# 🏀 SlamDunk Store: https://slam-dunk-store.vercel.app/
 
 > E-commerce platform for basketball enthusiasts - Shop shoes, apparel, and accessories with a seamless checkout experience.
 
